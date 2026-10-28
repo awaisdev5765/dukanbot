@@ -8,11 +8,14 @@ const ThemeContext = createContext<{
   theme: Theme;
   setTheme: (t: Theme) => void;
   toggle: () => void;
-} | null>(null);
+}>({
+  theme: "light",
+  setTheme: () => {},
+  toggle: () => {},
+});
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("dukanbot-theme") as Theme | null;
@@ -23,7 +26,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         : "light");
     setThemeState(preferred);
     document.documentElement.classList.toggle("dark", preferred === "dark");
-    setMounted(true);
   }, []);
 
   function setTheme(t: Theme) {
@@ -36,10 +38,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(theme === "dark" ? "light" : "dark");
   }
 
-  if (!mounted) {
-    return <div className="min-h-screen bg-background">{children}</div>;
-  }
-
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggle }}>
       {children}
@@ -48,7 +46,5 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useTheme() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
-  return ctx;
+  return useContext(ThemeContext);
 }
